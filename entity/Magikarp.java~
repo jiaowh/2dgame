@@ -1,0 +1,59 @@
+package entity;
+
+import main.GamePanel;
+import java.awt.Graphics2D;
+import java.awt.*;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.awt.Rectangle;
+import java.util.Random;
+
+public class Magikarp extends Entity{
+    public Magikarp(GamePanel gp){
+	super(gp);
+	direction = "left";
+	speed = 2;
+
+	getnpcImage();
+	setDialogue();
+
+    }
+     public void getnpcImage(){
+	try{
+
+
+	    left1 = ImageIO.read(getClass().getResourceAsStream("/res/npc/magikarp_left_1.png"));
+	    left2 = ImageIO.read(getClass().getResourceAsStream("/res/npc/magikarp_left_2.png"));
+	    right1 = ImageIO.read(getClass().getResourceAsStream("/res/npc/magikarp_right_1.png"));
+	    right2 = ImageIO.read(getClass().getResourceAsStream("/res/npc/magikarp_right_2.png"));
+	}catch(IOException e){
+	    e.printStackTrace();
+	}
+    }
+
+    public void setDialogue(){
+	dialogue[0] = "karp karp";
+
+    }
+    public void setAction(){
+	counter++;
+	if(counter ==60){
+	Random random = new Random();
+	int i = random.nextInt(100);//picks 0-99
+
+      	if(i<=50) direction = "right";
+	else if(i<=100) direction = "left";
+
+	if(worldX>38*gp.tileSize) direction = "left";
+	if(worldX<14*gp.tileSize) direction = "right";
+
+	counter=0;
+	}
+	
+    }
+
+    public void speak(){
+	super.speak();
+    }
+}

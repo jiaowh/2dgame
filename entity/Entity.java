@@ -1,0 +1,263 @@
+package entity;
+
+import java.awt.image.BufferedImage;
+import java.awt.Rectangle;
+import java.awt.Graphics2D;
+import java.awt.AlphaComposite;
+import java.awt.Color;
+
+import main.GamePanel;
+
+public class Entity{
+
+    GamePanel gp;
+
+    public int worldX,worldY;
+    public int speed;
+
+    public BufferedImage up1, up2, down1, down2, left1, left2, right1, right2;
+    public BufferedImage aup1, aup2, adown1, adown2, aleft1, aleft2, aright1, aright2;
+    
+    public String direction;
+
+    public int spriteCounter = 0;
+    public int spriteNum = 1;
+    public Rectangle solidArea = new Rectangle(0, 0, 48, 48);
+    public Rectangle attackArea = new Rectangle(0,0,0,0);
+    public int solidAreaDefaultX, solidAreaDefaultY;
+    public int counter;
+    public boolean collision = true;
+    public boolean collisionOn=false;
+    
+    public boolean attacking = false;
+    
+    public boolean aggressive = false;
+    public boolean engaged = false;
+
+    public boolean invincible = false;
+    public int invincibleCounter = 0;
+
+    public boolean alive = true;
+    public boolean dying = false;
+    int dyingCounter = 0;
+
+    String dialogue[] = new String[20];
+    int dialogueIndex = 0;
+
+    //status
+    public int maxLife;
+    public int life;
+    public int level;
+    public int atk;
+    public int def;
+    public int exp;
+    public int nextExp;
+ 
+    
+
+    public Entity(GamePanel gp){
+	this.gp = gp;
+    }
+
+    public void setAction(){}
+
+    public void damageReaction(){
+	switch(gp.player.direction){
+	case "up":
+	    direction = "down";
+	    worldY-=gp.tileSize/2;
+	    break;
+
+	case "down":
+	    direction = "up";
+	    worldY+=gp.tileSize/2;
+	    break;
+
+	case "left":
+	    direction = "right";
+	     worldX-=gp.tileSize/2;
+	    break;
+
+	case "right":
+	    direction = "left";
+	     worldX+=gp.tileSize/2;
+	    break;
+	}
+    }
+
+    public void speak(){
+    	if(dialogue[dialogueIndex]==null){dialogueIndex = 0;}
+	gp.ui.currentDialogue = dialogue[dialogueIndex];
+	dialogueIndex++;
+
+	switch(gp.player.direction){
+	case "up":
+	    direction = "down";
+	    break;
+
+	case "down":
+	    direction = "up";
+	    break;
+
+	case "left":
+	    direction = "right";
+	    break;
+
+	case "right":
+	    direction = "left";
+	    break;
+	}
+    }
+
+    public void update(){
+	setAction();
+	
+	collisionOn = false;
+	gp.cChecker.checkTile(this);
+	gp.cChecker.checkObject(this, false);
+	gp.cChecker.checkPlayer(this);
+
+	if(collisionOn == false){
+	    switch(direction){
+	    case "up":
+		   worldY -= speed;
+		break;
+	    case "down":
+		  worldY += speed;
+		break;
+	    case "left":
+		 worldX -= speed;
+		break;
+	    case "right":
+		worldX += speed;
+		break;
+		
+	    }
+	}
+	if(invincible==true){
+	    
+	    invincibleCounter ++;
+	    if(invincibleCounter>40){
+		invincible=false;
+		invincibleCounter=0;
+	    }
+	}
+	
+	
+
+	spriteCounter++;
+	if(spriteCounter>10){
+	    if(spriteNum == 1){
+		spriteNum = 2;
+	    }
+	    else if(spriteNum ==2){
+		spriteNum = 1;}
+	
+	    spriteCounter = 0;}
+	
+
+          }
+    
+    public void draw(Graphics2D g2){
+	BufferedImage image = null;
+	int screenX = worldX - gp.player.worldX + gp.player.screenX;
+	int screenY = worldY - gp.player.worldY + gp.player.screenY;
+	int rightOffset=gp.screenWidth - gp.player.screenX;
+	int bottomOffset = gp.screenHeight - gp.player.screenY;
+	   if(gp.player.screenX>gp.player.worldX){
+		screenX = worldX;
+	    }
+	   if(gp.player.screenY>gp.player.worldY){
+	       screenY = worldY;
+	   }
+	   
+	   if(rightOffset>gp.worldWidth - gp.player.worldX){
+	       screenX = gp.screenWidth - (gp.worldWidth - worldX);
+	   }
+	   
+	   if(bottomOffset>gp.worldHeight - gp.player.worldY){
+	       screenY = gp.screenHeight - (gp.worldHeight - worldY);}
+
+	   
+	   if(worldX + gp.tileSize >gp.player.worldX - gp.player.screenX &&
+	      worldX - gp.tileSize <gp.player.worldX + gp.player.screenX &&
+	      worldY + gp.tileSize > gp.player.worldY - gp.player.screenY &&
+	      worldY - gp.tileSize < gp.player.worldY + gp.player.screenY){
+	       
+	       
+	       switch(direction){
+	       case "up":
+		   if(spriteNum==1){
+		       image = up1;}
+		   else if(spriteNum==2) {image = up2;}
+		   break;
+	       case "down":
+		   if(spriteNum==1){
+		       image = down1;}
+		   else if(spriteNum==2) {image = down2;}
+		   break;
+	       case "left":
+		   if(spriteNum==1){
+		       image = left1;}
+		   else if(spriteNum==2){image = left2;}
+		   break;
+	       case "right":
+		   if(spriteNum==1){
+		       image = right1;}
+		   else  if(spriteNum==2){image = right2;}
+		   break;
+	       }
+
+	       //hp bar
+	       if(aggressive==true&&engaged == true){
+		   double hpScale = (double)gp.tileSize/maxLife;
+		   double hpBarValue = hpScale*life;
+		   g2.setColor(new Color(30, 30, 30));
+		   g2.fillRect(screenX-1, screenY - 16, gp.tileSize+2, 12);
+		   g2.setColor(new Color(255,0,30));
+		   g2.fillRect(screenX, screenY - 15, (int)hpBarValue, 10);
+	       }
+	       
+	       if(invincible==true){
+		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,0.3f));//sets transparency of graphics2d
+		engaged = true;
+	    }
+	       if(dying==true){
+		    collision=false;
+		   dyingAnimation(g2);
+		  
+	       }
+	       g2.drawImage(image, screenX, screenY, gp.tileSize, gp.tileSize, null);}
+	   else if(gp.player.screenX>gp.player.worldX||gp.player.screenY>gp.player.worldY||rightOffset>gp.worldWidth - gp.player.worldX||bottomOffset>gp.worldHeight - gp.player.worldY ){
+	       g2.drawImage(image, screenX, screenY, gp.tileSize, gp.tileSize, null);
+	   }
+	   g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,1f));
+	   
+    }
+
+    public void dyingAnimation(Graphics2D g2){
+	dyingCounter++;
+	if(dyingCounter<=5){
+	    g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,0f));
+	}
+	if(dyingCounter>5&&dyingCounter<=10){
+	    g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,1f));
+	}
+	if(dyingCounter>10&&dyingCounter<=15){
+	    g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,0f));
+	}
+	if(dyingCounter>15&&dyingCounter<=20){
+	    g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,1f));
+	}
+	if(dyingCounter>20&&dyingCounter<=25){
+	    g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,0f));
+	}
+	if(dyingCounter>25&&dyingCounter<=30){
+	    g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,1f));
+	}
+	if(dyingCounter>30){
+	    dying=false;
+	    alive=false;
+	}
+    }
+}

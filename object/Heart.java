@@ -1,0 +1,20 @@
+package object;
+
+import java.io.IOException;
+import javax.imageio.ImageIO;
+
+public class Heart extends SuperObject{
+
+public Heart(){
+
+	name = "Heart";
+	try{
+	    image = ImageIO.read(getClass().getResourceAsStream("/res/objects/heart.png"));
+	    image2 = ImageIO.read(getClass().getResourceAsStream("/res/objects/heart_half.png"));
+	    image3 = ImageIO.read(getClass().getResourceAsStream("/res/objects/heart_empty.png"));
+	}catch(IOException e){
+	    e.printStackTrace();
+	}
+	collision = true;
+    }
+}
